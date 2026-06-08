@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта ярмарки</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1300px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); overflow: hidden; }
+
+        .header { background: linear-gradient(135deg, #1a2a4a 0%, #2c5282 100%); color: white; padding: 20px 24px; text-align: center; position: relative; }
+        .header h1 { font-size: 22px; margin-bottom: 4px; }
+        .header p { opacity: 0.75; font-size: 13px; }
+        .sync-badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 20px; background: rgba(255,255,255,0.15); color: white; margin-top: 10px; }
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; }
+        .sync-dot.online  { background: #34d399; }
+        .sync-dot.offline { background: #f87171; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+        .sync-dot.connecting { animation: pulse 1s infinite; }
+
+        .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 14px 20px; background: #f0f4fa; border-bottom: 1px solid #dde3ee; }
+        button { padding: 9px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+        .btn-red  { background: #e53e3e; color: white; } .btn-red:hover  { background: #c53030; }
+        .btn-gray { background: #718096; color: white; } .btn-gray:hover { background: #4a5568; }
+
+        .main-layout { display: flex; }
+        .zones-column { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 24px; }
+        .info-sidebar { width: 260px; min-width: 260px; background: #f8fafc; border-left: 2px solid #e2e8f0; padding: 18px; max-height: calc(100vh - 200px); overflow-y: auto; position: sticky; top: 0; }
+
+        .zone-block { border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+        .zone-title { padding: 11px 16px; font-size: 14px; font-weight: 700; color: white; }
+        .zone-a .zone-title { background: #2b6cb0; }
+        .zone-b .zone-title { background: #276749; }
+        .zone-c .zone-title { background: #744210; }
+        .zone-body { padding: 16px; display: flex; gap: 20px; align-items: flex-start; }
+
+        .illus-panel { flex-shrink: 0; background: #f7fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .illus-label { font-size: 11px; font-weight: 700; color: #4a5568; text-align: center; }
+
+        .svg-cell { cursor: pointer; }
+        .svg-cell rect { transition: fill 0.2s, opacity 0.2s; }
+        .svg-cell:hover rect { opacity: 0.7; }
+
+        .grid-panel { flex: 1; min-width: 0; }
+        .grid-label { font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 8px; }
+
+        .cells-grid-a { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+        .cells-grid-b { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
+        .cells-grid-c { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 5px; }
+
+        .cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:2px solid #3182ce; border-radius:4px; background:white; cursor:pointer; font-weight:700; font-size:11px; transition:all 0.15s; user-select:none; }
+        .cell:hover { background:#ebf8ff; transform:scale(1.1); box-shadow:0 2px 6px rgba(49,130,206,0.4); position:relative; z-index:2; }
+        .cell.zone-b { border-color:#38a169; } .cell.zone-b:hover { background:#f0fff4; }
+        .cell.zone-c { border-color:#d69e2e; } .cell.zone-c:hover { background:#fffff0; }
+        .cell.occupied { background:#c6f6d5; border-color:#38a169; color:#276749; }
+        .cell.reserved { background:#fefcbf; border-color:#d69e2e; color:#744210; }
+
+        .row-label { font-size:11px; color:#718096; font-weight:600; margin-bottom:4px; margin-top:8px; }
+        .two-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .three-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
+
+        .info-title { font-size:15px; font-weight:700; color:#1a202c; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid #3182ce; }
+        .info-placeholder { color:#a0aec0; font-size:13px; text-align:center; padding:16px 0; }
+        .info-item { margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #e2e8f0; }
+        .info-item:last-child { border-bottom:none; }
+        .info-item-label { font-size:10px; text-transform:uppercase; color:#718096; font-weight:600; margin-bottom:2px; }
+        .info-item-value { font-size:13px; color:#1a202c; font-weight:500; }
+        .status-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+        .badge-free     { background:#c6f6d5; color:#276749; }
+        .badge-occupied { background:#fed7d7; color:#9b2c2c; }
+        .badge-reserved { background:#fefcbf; color:#744210; }
+
+        .legend { display:flex; gap:14px; flex-wrap:wrap; padding:10px 18px; background:#f7fafc; border-top:1px solid #e2e8f0; font-size:11px; color:#4a5568; align-items:center; }
+        .legend-item { display:flex; align-items:center; gap:5px; }
+        .legend-dot { width:12px; height:12px; border-radius:3px; border:2px solid; }
+
+        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; align-items:center; justify-content:center; }
+        .modal.active { display:flex; }
+        .modal-content { background:white; border-radius:12px; padding:24px; max-width:440px; width:92%; max-height:85vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,0.25); }
+        .modal-header { font-size:17px; font-weight:700; margin-bottom:16px; color:#1a202c; }
+        .form-group { margin-bottom:12px; }
+        .form-group label { display:block; margin-bottom:4px; font-weight:600; font-size:12px; color:#4a5568; }
+        .form-group input, .form-group textarea, .form-group select { width:100%; padding:8px 11px; border:1.5px solid #cbd5e0; border-radius:6px; font-family:inherit; font-size:14px; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline:none; border-color:#3182ce; }
+        .form-group textarea { resize:vertical; min-height:65px; }
+        .modal-buttons { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+
+        @media (max-width:800px) {
+            .main-layout { flex-direction:column; }
+            .info-sidebar { width:100%; max-height:none; border-left:none; border-top:2px solid #e2e8f0; }
+            .zone-body { flex-direction:column; }
+            .cells-grid-a { grid-template-columns:repeat(8,1fr); }
+        }
+        @media (max-width:500px) {
+            .cells-grid-a { grid-template-columns:repeat(5,1fr); }
+            .cells-grid-b { grid-template-columns:repeat(5,1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🎪 Карта ярмарки</h1>
+        <p>Нажмите на ячейку — данные синхронизируются у всех в реальном времени</p>
+        <div class="sync-badge">
+            <div class="sync-dot connecting" id="syncDot"></div>
+            <span id="syncText">Подключение…</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-red"  onclick="resetData()">🔄 Очистить всё</button>
+        <button class="btn-gray" onclick="window.print()">🖨️ Печать</button>
+    </div>
+
+    <div class="main-layout">
+        <div class="zones-column">
+
+            <!-- ZONE A -->
+            <div class="zone-block zone-a">
+                <div class="zone-title">📍 ЗОНА A — Главная аллея · 110 м · ячейки 1–40</div>
+                <div class="zone-body">
+                    <div class="illus-panel">
+                        <div class="illus-label">110 м</div>
+                        <svg id="svgA" width="64" height="500" viewBox="0 0 64 500"></svg>
+                        <div class="illus-label">Аллея A</div>
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-label">Ячейки 1–40 · нажмите для редактирования</div>
+                        <div class="cells-grid-a" id="gridA"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZONE B -->
+            <div class="zone-block zone-b">
+                <div class="zone-title">📍 ЗОНА B — Боковая левая аллея · 50 м · ячейки 41–60</div>
+                <div class="zone-body">
+                    <div class="illus-panel">
+                        <div class="illus-label">50 м</div>
+                        <svg id="svgB" width="64" height="260" viewBox="0 0 64 260"></svg>
+                        <div class="illus-label">Боковая</div>
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-label">Ячейки 41–60 · нажмите для редактирования</div>
+                        <div class="cells-grid-b" id="gridB"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZONE C -->
+            <div class="zone-block zone-c">
+                <div class="zone-title">📍 ЗОНА C — Вокруг шатра · 25×25 м · ячейки 61–84</div>
+                <div class="zone-body">
+                    <div class="illus-panel">
+                        <div class="illus-label">25×25 м</div>
+                        <svg id="svgC" width="290" height="290" viewBox="0 0 290 290"></svg>
+                        <div class="illus-label">Шатёр · сцена</div>
+                    </div>
+                    <div class="grid-panel">
+                        <div class="row-label" style="margin-top:0">Верхний ряд (61–66)</div>
+                        <div class="cells-grid-c" id="gridC_top"></div>
+                        <div class="row-label">Нижний ряд (67–72)</div>
+                        <div class="cells-grid-c" id="gridC_bot"></div>
+                        <div class="two-cols">
+                            <div>
+                                <div class="row-label">Левый ряд (73–78)</div>
+                                <div class="three-grid" id="gridC_left"></div>
+                            </div>
+                            <div>
+                                <div class="row-label">Правый ряд (79–84)</div>
+                                <div class="three-grid" id="gridC_right"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="info-sidebar">
+            <div class="info-title">📋 Информация</div>
+            <div id="infoContent"><p class="info-placeholder">Нажмите на ячейку</p></div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <strong>Легенда:</strong>
+        <div class="legend-item"><div class="legend-dot" style="background:white;border-color:#3182ce;"></div> Свободна</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c6f6d5;border-color:#38a169;"></div> Занята</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fefcbf;border-color:#d69e2e;"></div> Зарезервирована</div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">Ячейка #<span id="cellNumber"></span></div>
+        <div class="form-group">
+            <label>Статус</label>
+            <select id="cellStatus">
+                <option value="free">✅ Свободна</option>
+                <option value="occupied">🔴 Занята</option>
+                <option value="reserved">🟡 Зарезервирована</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Название торговой точки</label><input type="text" id="cellName" placeholder="Например: Пирожки Марии"></div>
+        <div class="form-group"><label>Владелец / Контакт</label><input type="text" id="cellOwner" placeholder="ФИО или название"></div>
+        <div class="form-group"><label>Телефон</label><input type="tel" id="cellPhone" placeholder="+996 …"></div>
+        <div class="form-group"><label>Категория</label><input type="text" id="cellCategory" placeholder="Продукты, одежда…"></div>
+        <div class="form-group"><label>Примечания</label><textarea id="cellNotes" placeholder="Любые заметки…"></textarea></div>
+        <div class="modal-buttons">
+            <button class="btn-gray" onclick="closeModal()">Отмена</button>
+            <button class="btn-red"  onclick="deleteCell()">Удалить</button>
+            <button style="background:#38a169;color:white;padding:9px 18px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;" onclick="saveCell()">💾 Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase compat (работает везде без type=module) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/* ── Firebase init ── */
+const firebaseConfig = {
+    databaseURL: 'https://shuttle-eco-map-default-rtdb.europe-west1.firebasedatabase.app'
+};
+firebase.initializeApp(firebaseConfig);
+const db      = firebase.database();
+const fairRef = db.ref('fairMap');
+
+let cellsData   = {};
+let currentCell = null;
+
+/* ── Sync badge ── */
+function setOnline()  { document.getElementById('syncDot').className='sync-dot online';  document.getElementById('syncText').textContent='🟢 Онлайн'; }
+function setOffline() { document.getElementById('syncDot').className='sync-dot offline'; document.getElementById('syncText').textContent='🔴 Нет соединения'; }
+
+/* ── Listen realtime ── */
+fairRef.on('value', snap => {
+    cellsData = snap.val() || {};
+    updateAllCells();
+    setOnline();
+}, () => setOffline());
+
+/* ── Save / Delete ── */
+function saveCellFB(num, data) { fairRef.child(num).set(data).then(setOnline).catch(setOffline); }
+function deleteCellFB(num)     { fairRef.child(num).remove().then(setOnline).catch(setOffline); }
+
+/* ============================================================
+   BUILD SVG A — вертикальная, 40 ячеек
+============================================================ */
+function buildSvgA() {
+    var svg = document.getElementById('svgA');
+    var ns  = 'http://www.w3.org/2000/svg';
+    var h = 11, gap = 2, x = 4, w = 56;
+    for (var i = 0; i < 40; i++) {
+        var num = i + 1;
+        var y   = i * (h + gap);
+        var g   = document.createElementNS(ns, 'g');
+        g.setAttribute('class', 'svg-cell');
+        g.setAttribute('id', 'svgA-' + num);
+        g.addEventListener('click', (function(n){ return function(){ editCell(n); }; })(num));
+
+        var r = document.createElementNS(ns, 'rect');
+        r.setAttribute('x', x); r.setAttribute('y', y);
+        r.setAttribute('width', w); r.setAttribute('height', h);
+        r.setAttribute('rx', '2'); r.setAttribute('fill', '#bee3f8');
+        r.setAttribute('stroke', '#3182ce'); r.setAttribute('stroke-width', '1.2');
+
+        var t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', x + w/2); t.setAttribute('y', y + h - 2);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '7.5');
+        t.setAttribute('font-weight', 'bold'); t.setAttribute('fill', '#1a365d');
+        t.setAttribute('pointer-events', 'none');
+        t.textContent = num;
+
+        g.appendChild(r); g.appendChild(t); svg.appendChild(g);
+    }
+}
+
+/* ============================================================
+   BUILD SVG B — вертикальная, 20 ячеек
+============================================================ */
+function buildSvgB() {
+    var svg = document.getElementById('svgB');
+    var ns  = 'http://www.w3.org/2000/svg';
+    var h = 11, gap = 2, x = 4, w = 56;
+    for (var i = 0; i < 20; i++) {
+        var num = 41 + i;
+        var y   = i * (h + gap);
+        var g   = document.createElementNS(ns, 'g');
+        g.setAttribute('class', 'svg-cell');
+        g.setAttribute('id', 'svgB-' + num);
+        g.addEventListener('click', (function(n){ return function(){ editCell(n); }; })(num));
+
+        var r = document.createElementNS(ns, 'rect');
+        r.setAttribute('x', x); r.setAttribute('y', y);
+        r.setAttribute('width', w); r.setAttribute('height', h);
+        r.setAttribute('rx', '2'); r.setAttribute('fill', '#c6f6d5');
+        r.setAttribute('stroke', '#38a169'); r.setAttribute('stroke-width', '1.2');
+
+        var t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', x + w/2); t.setAttribute('y', y + h - 2);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '7.5');
+        t.setAttribute('font-weight', 'bold'); t.setAttribute('fill', '#1a4731');
+        t.setAttribute('pointer-events', 'none');
+        t.textContent = num;
+
+        g.appendChild(r); g.appendChild(t); svg.appendChild(g);
+    }
+}
+
+/* ============================================================
+   BUILD SVG C — квадрат со сценой
+============================================================ */
+function buildSvgC() {
+    var svg = document.getElementById('svgC');
+    var ns  = 'http://www.w3.org/2000/svg';
+
+    var bg = document.createElementNS(ns,'rect');
+    bg.setAttribute('x','5'); bg.setAttribute('y','5');
+    bg.setAttribute('width','280'); bg.setAttribute('height','280');
+    bg.setAttribute('fill','#fef9e7'); bg.setAttribute('stroke','#d69e2e');
+    bg.setAttribute('stroke-width','2'); bg.setAttribute('rx','4');
+    svg.appendChild(bg);
+
+    var sc = document.createElementNS(ns,'rect');
+    sc.setAttribute('x','90'); sc.setAttribute('y','90');
+    sc.setAttribute('width','110'); sc.setAttribute('height','110');
+    sc.setAttribute('fill','#ffc107'); sc.setAttribute('stroke','#e65100');
+    sc.setAttribute('stroke-width','2'); sc.setAttribute('rx','6');
+    svg.appendChild(sc);
+
+    function addTxt(x,y,txt,size,bold,color) {
+        var t = document.createElementNS(ns,'text');
+        t.setAttribute('x',x); t.setAttribute('y',y);
+        t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',size);
+        if(bold) t.setAttribute('font-weight','bold');
+        t.setAttribute('fill',color); t.setAttribute('pointer-events','none');
+        t.textContent = txt; svg.appendChild(t);
+    }
+    addTxt(145,140,'🎭 СЦЕНА',13,true,'#7b3100');
+    addTxt(145,156,'центральная',9,false,'#7b3100');
+
+    // Top: 61-66
+    for(var i=0;i<6;i++) addSvgCCell(svg,ns,61+i, 10+i*46, 8,  40, 24);
+    // Bottom: 67-72
+    for(var i=0;i<6;i++) addSvgCCell(svg,ns,67+i, 10+i*46, 258, 40, 24);
+    // Left: 73-78
+    for(var i=0;i<6;i++) addSvgCCell(svg,ns,73+i, 8, 40+i*37, 30, 28);
+    // Right: 79-84
+    for(var i=0;i<6;i++) addSvgCCell(svg,ns,79+i, 252, 40+i*37, 30, 28);
+}
+
+function addSvgCCell(svg, ns, num, x, y, w, h) {
+    var g = document.createElementNS(ns,'g');
+    g.setAttribute('class','svg-cell');
+    g.setAttribute('id','svgC-'+num);
+    g.addEventListener('click',(function(n){ return function(){ editCell(n); }; })(num));
+
+    var r = document.createElementNS(ns,'rect');
+    r.setAttribute('x',x); r.setAttribute('y',y);
+    r.setAttribute('width',w); r.setAttribute('height',h);
+    r.setAttribute('rx','3'); r.setAttribute('fill','#d5e8d4');
+    r.setAttribute('stroke','#82b366'); r.setAttribute('stroke-width','1.5');
+
+    var t = document.createElementNS(ns,'text');
+    t.setAttribute('x',x+w/2); t.setAttribute('y',y+h/2+4);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','8');
+    t.setAttribute('font-weight','bold'); t.setAttribute('fill','#276749');
+    t.setAttribute('pointer-events','none');
+    t.textContent = num;
+
+    g.appendChild(r); g.appendChild(t); svg.appendChild(g);
+}
+
+/* ============================================================
+   BUILD CELL GRIDS
+============================================================ */
+function buildGrids() {
+    var gA = document.getElementById('gridA');
+    for(var i=1;  i<=40; i++) gA.appendChild(makeCell(i,''));
+
+    var gB = document.getElementById('gridB');
+    for(var i=41; i<=60; i++) gB.appendChild(makeCell(i,'zone-b'));
+
+    var gCt = document.getElementById('gridC_top');
+    for(var i=61; i<=66; i++) gCt.appendChild(makeCell(i,'zone-c'));
+
+    var gCb = document.getElementById('gridC_bot');
+    for(var i=67; i<=72; i++) gCb.appendChild(makeCell(i,'zone-c'));
+
+    var gCl = document.getElementById('gridC_left');
+    for(var i=73; i<=78; i++) gCl.appendChild(makeCell(i,'zone-c'));
+
+    var gCr = document.getElementById('gridC_right');
+    for(var i=79; i<=84; i++) gCr.appendChild(makeCell(i,'zone-c'));
+}
+
+function makeCell(num, cls) {
+    var d = document.createElement('div');
+    d.className = 'cell ' + cls;
+    d.textContent = num;
+    d.id = 'cell-' + num;
+    d.onclick = function(){ editCell(num); showInfo(num); };
+    return d;
+}
+
+/* ============================================================
+   EDIT / SAVE / DELETE
+============================================================ */
+function editCell(num) {
+    currentCell = num;
+    var data = cellsData[num] || {number:num,status:'free',name:'',owner:'',phone:'',category:'',notes:''};
+    document.getElementById('cellNumber').textContent  = num;
+    document.getElementById('cellStatus').value        = data.status;
+    document.getElementById('cellName').value          = data.name   || '';
+    document.getElementById('cellOwner').value         = data.owner  || '';
+    document.getElementById('cellPhone').value         = data.phone  || '';
+    document.getElementById('cellCategory').value      = data.category || '';
+    document.getElementById('cellNotes').value         = data.notes  || '';
+    document.getElementById('editModal').classList.add('active');
+}
+
+function saveCell() {
+    var data = {
+        number:   currentCell,
+        status:   document.getElementById('cellStatus').value,
+        name:     document.getElementById('cellName').value,
+        owner:    document.getElementById('cellOwner').value,
+        phone:    document.getElementById('cellPhone').value,
+        category: document.getElementById('cellCategory').value,
+        notes:    document.getElementById('cellNotes').value
+    };
+    saveCellFB(currentCell, data);
+    showInfo(currentCell);
+    closeModal();
+}
+
+function deleteCell() {
+    if(confirm('Удалить данные ячейки ' + currentCell + '?')) {
+        deleteCellFB(currentCell);
+        closeModal();
+    }
+}
+
+function closeModal() { document.getElementById('editModal').classList.remove('active'); }
+
+function resetData() {
+    if(confirm('⚠️ Удалить ВСЕ данные у всех пользователей?')) {
+        fairRef.set(null);
+        document.getElementById('infoContent').innerHTML = '<p class="info-placeholder">Выберите ячейку</p>';
+    }
+}
+
+/* ============================================================
+   UPDATE VISUAL
+============================================================ */
+var colA = { free:{f:'#bee3f8',s:'#3182ce'}, occupied:{f:'#c6f6d5',s:'#38a169'}, reserved:{f:'#fefcbf',s:'#d69e2e'} };
+var colB = { free:{f:'#c6f6d5',s:'#38a169'}, occupied:{f:'#9ae6b4',s:'#276749'}, reserved:{f:'#fefcbf',s:'#d69e2e'} };
+var colC = { free:{f:'#d5e8d4',s:'#82b366'}, occupied:{f:'#9ae6b4',s:'#276749'}, reserved:{f:'#fefcbf',s:'#d69e2e'} };
+
+function updateAllCells() {
+    for(var n=1; n<=84; n++) {
+        var el = document.getElementById('cell-'+n);
+        if(!el) continue;
+        var data = cellsData[n];
+        el.classList.remove('occupied','reserved');
+        if(data) {
+            if(data.status==='occupied') el.classList.add('occupied');
+            if(data.status==='reserved') el.classList.add('reserved');
+        }
+    }
+    for(var n=1;  n<=40; n++) updateSvgCell('svgA-'+n, n, colA);
+    for(var n=41; n<=60; n++) updateSvgCell('svgB-'+n, n, colB);
+    for(var n=61; n<=84; n++) updateSvgCell('svgC-'+n, n, colC);
+}
+
+function updateSvgCell(id, n, palette) {
+    var g = document.getElementById(id);
+    if(!g) return;
+    var r      = g.querySelector('rect');
+    var data   = cellsData[n];
+    var status = data ? data.status : 'free';
+    var c      = palette[status] || palette.free;
+    r.setAttribute('fill',   c.f);
+    r.setAttribute('stroke', c.s);
+}
+
+/* ============================================================
+   INFO PANEL
+============================================================ */
+function showInfo(num) {
+    var data  = cellsData[num];
+    var panel = document.getElementById('infoContent');
+    var zone  = num<=40 ? 'A — Главная аллея' : num<=60 ? 'B — Боковая аллея' : 'C — Вокруг шатра';
+    var badges = {free:'badge-free',occupied:'badge-occupied',reserved:'badge-reserved'};
+    var labels = {free:'Свободна',occupied:'Занята',reserved:'Зарезервирована'};
+    var status = data ? data.status : 'free';
+    function row(label,val) { return '<div class="info-item"><div class="info-item-label">'+label+'</div><div class="info-item-value">'+val+'</div></div>'; }
+    var html = row('Ячейка','#'+num) + row('Зона',zone) + row('Статус','<span class="status-badge '+badges[status]+'">'+labels[status]+'</span>');
+    if(data&&data.name)     html += row('Название',     esc(data.name));
+    if(data&&data.owner)    html += row('Владелец',     esc(data.owner));
+    if(data&&data.phone)    html += row('Телефон','<a href="tel:'+esc(data.phone)+'" style="color:#3182ce;">'+esc(data.phone)+'</a>');
+    if(data&&data.category) html += row('Категория',    esc(data.category));
+    if(data&&data.notes)    html += row('Примечания',   esc(data.notes));
+    panel.innerHTML = html;
+}
+
+function esc(t) { var d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
+
+/* ── INIT ── */
+buildSvgA();
+buildSvgB();
+buildSvgC();
+buildGrids();
+</script>
+</body>
+</html>
