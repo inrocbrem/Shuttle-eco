@@ -45,10 +45,7 @@
         .grid-panel { flex: 1; min-width: 0; }
         .grid-label { font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 8px; }
 
-        .cells-grid-a { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
-        .cells-grid-b { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; }
-        .cells-grid-c { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 5px; }
-
+        .cells-grid { display: grid; gap: 5px; justify-content: start; }
         .cell { aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:2px solid #3182ce; border-radius:4px; background:white; cursor:pointer; font-weight:700; font-size:11px; transition:all 0.15s; user-select:none; }
         .cell:hover { background:#ebf8ff; transform:scale(1.1); box-shadow:0 2px 6px rgba(49,130,206,0.4); position:relative; z-index:2; }
         .cell.zone-b { border-color:#38a169; } .cell.zone-b:hover { background:#f0fff4; }
@@ -57,8 +54,7 @@
         .cell.reserved { background:#fefcbf; border-color:#d69e2e; color:#744210; }
 
         .row-label { font-size:11px; color:#718096; font-weight:600; margin-bottom:4px; margin-top:8px; }
-        .two-cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-        .three-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
+        .a-grids { display:flex; flex-direction:column; gap:2px; }
 
         .info-title { font-size:15px; font-weight:700; color:#1a202c; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid #3182ce; }
         .info-placeholder { color:#a0aec0; font-size:13px; text-align:center; padding:16px 0; }
@@ -90,11 +86,6 @@
             .main-layout { flex-direction:column; }
             .info-sidebar { width:100%; max-height:none; border-left:none; border-top:2px solid #e2e8f0; }
             .zone-body { flex-direction:column; }
-            .cells-grid-a { grid-template-columns:repeat(8,1fr); }
-        }
-        @media (max-width:500px) {
-            .cells-grid-a { grid-template-columns:repeat(5,1fr); }
-            .cells-grid-b { grid-template-columns:repeat(5,1fr); }
         }
     </style>
 </head>
@@ -117,62 +108,59 @@
     <div class="main-layout">
         <div class="zones-column">
 
-            <!-- ZONE A -->
+            <!-- ZONE A — вокруг шатра -->
             <div class="zone-block zone-a">
-                <div class="zone-title">📍 ЗОНА A — Главная аллея · 110 м · ячейки 1–40</div>
+                <div class="zone-title">📍 ЗОНА A — Вокруг шатра · ячейки 1–27</div>
                 <div class="zone-body">
                     <div class="illus-panel">
-                        <div class="illus-label">110 м</div>
-                        <svg id="svgA" width="64" height="500" viewBox="0 0 64 500"></svg>
-                        <div class="illus-label">Аллея A</div>
+                        <div class="illus-label">Шатёр</div>
+                        <svg id="svgA" width="290" height="290" viewBox="0 0 290 290"></svg>
+                        <div class="illus-label">Сцена · по часовой от 1</div>
                     </div>
                     <div class="grid-panel">
-                        <div class="grid-label">Ячейки 1–40 · нажмите для редактирования</div>
-                        <div class="cells-grid-a" id="gridA"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ZONE B -->
-            <div class="zone-block zone-b">
-                <div class="zone-title">📍 ЗОНА B — Боковая левая аллея · 50 м · ячейки 41–60</div>
-                <div class="zone-body">
-                    <div class="illus-panel">
-                        <div class="illus-label">50 м</div>
-                        <svg id="svgB" width="64" height="260" viewBox="0 0 64 260"></svg>
-                        <div class="illus-label">Боковая</div>
-                    </div>
-                    <div class="grid-panel">
-                        <div class="grid-label">Ячейки 41–60 · нажмите для редактирования</div>
-                        <div class="cells-grid-b" id="gridB"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ZONE C -->
-            <div class="zone-block zone-c">
-                <div class="zone-title">📍 ЗОНА C — Вокруг шатра · 25×25 м · ячейки 61–84</div>
-                <div class="zone-body">
-                    <div class="illus-panel">
-                        <div class="illus-label">25×25 м</div>
-                        <svg id="svgC" width="290" height="290" viewBox="0 0 290 290"></svg>
-                        <div class="illus-label">Шатёр · сцена</div>
-                    </div>
-                    <div class="grid-panel">
-                        <div class="row-label" style="margin-top:0">Верхний ряд (61–66)</div>
-                        <div class="cells-grid-c" id="gridC_top"></div>
-                        <div class="row-label">Нижний ряд (67–72)</div>
-                        <div class="cells-grid-c" id="gridC_bot"></div>
-                        <div class="two-cols">
-                            <div>
-                                <div class="row-label">Левый ряд (73–78)</div>
-                                <div class="three-grid" id="gridC_left"></div>
-                            </div>
-                            <div>
-                                <div class="row-label">Правый ряд (79–84)</div>
-                                <div class="three-grid" id="gridC_right"></div>
-                            </div>
+                        <div class="grid-label">Ячейки 1–27 · нажмите для редактирования</div>
+                        <div class="a-grids">
+                            <div class="row-label" style="margin-top:0">Сверху (1–6)</div>
+                            <div class="cells-grid" id="gridA_top"></div>
+                            <div class="row-label">Справа (7–12)</div>
+                            <div class="cells-grid" id="gridA_right"></div>
+                            <div class="row-label">Снизу (13–18)</div>
+                            <div class="cells-grid" id="gridA_bot"></div>
+                            <div class="row-label">Слева (19–27)</div>
+                            <div class="cells-grid" id="gridA_left"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZONE B — боковая линия -->
+            <div class="zone-block zone-b">
+                <div class="zone-title">📍 ЗОНА B — Боковая линия · ячейки 1–20</div>
+                <div class="zone-body">
+                    <div class="illus-panel">
+                        <div class="illus-label">Боковая</div>
+                        <svg id="svgB" width="64" height="260" viewBox="0 0 64 260"></svg>
+                        <div class="illus-label">линия</div>
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-label">Ячейки 1–20 · нажмите для редактирования</div>
+                        <div class="cells-grid" id="gridB"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZONE C — прямая линия -->
+            <div class="zone-block zone-c">
+                <div class="zone-title">📍 ЗОНА C — Прямая линия · ячейки 21–30</div>
+                <div class="zone-body">
+                    <div class="illus-panel">
+                        <div class="illus-label">Прямая</div>
+                        <svg id="svgC" width="64" height="140" viewBox="0 0 64 140"></svg>
+                        <div class="illus-label">линия</div>
+                    </div>
+                    <div class="grid-panel">
+                        <div class="grid-label">Ячейки 21–30 · нажмите для редактирования</div>
+                        <div class="cells-grid" id="gridC"></div>
                     </div>
                 </div>
             </div>
@@ -196,7 +184,7 @@
 <!-- MODAL -->
 <div id="editModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header">Ячейка #<span id="cellNumber"></span></div>
+        <div class="modal-header">Ячейка <span id="cellNumber"></span></div>
         <div class="form-group">
             <label>Статус</label>
             <select id="cellStatus">
@@ -232,7 +220,14 @@ const db      = firebase.database();
 const fairRef = db.ref('fairMap');
 
 let cellsData   = {};
-let currentCell = null;
+let currentCell = null;          // композитный ключ, напр. "A5", "B12", "C23"
+const cellMeta  = {};            // ключ -> {num, zone}
+
+const ZONES = {
+    A: 'A — Вокруг шатра',
+    B: 'B — Боковая линия',
+    C: 'C — Прямая линия'
+};
 
 /* ── Sync badge ── */
 function setOnline()  { document.getElementById('syncDot').className='sync-dot online';  document.getElementById('syncText').textContent='🟢 Онлайн'; }
@@ -246,78 +241,50 @@ fairRef.on('value', snap => {
 }, () => setOffline());
 
 /* ── Save / Delete ── */
-function saveCellFB(num, data) { fairRef.child(num).set(data).then(setOnline).catch(setOffline); }
-function deleteCellFB(num)     { fairRef.child(num).remove().then(setOnline).catch(setOffline); }
+function saveCellFB(key, data) { fairRef.child(key).set(data).then(setOnline).catch(setOffline); }
+function deleteCellFB(key)     { fairRef.child(key).remove().then(setOnline).catch(setOffline); }
 
 /* ============================================================
-   BUILD SVG A — вертикальная, 40 ячеек
+   BUILD CELL GRIDS
+============================================================ */
+function setCols(el, n) { el.style.gridTemplateColumns = 'repeat(' + n + ', minmax(28px, 44px))'; }
+
+function buildGrids() {
+    var gAt = document.getElementById('gridA_top');   setCols(gAt,6);
+    for(var i=1;  i<=6;  i++) gAt.appendChild(makeCell('A', i, ''));
+
+    var gAr = document.getElementById('gridA_right'); setCols(gAr,6);
+    for(var i=7;  i<=12; i++) gAr.appendChild(makeCell('A', i, ''));
+
+    var gAb = document.getElementById('gridA_bot');   setCols(gAb,6);
+    for(var i=13; i<=18; i++) gAb.appendChild(makeCell('A', i, ''));
+
+    var gAl = document.getElementById('gridA_left');  setCols(gAl,9);
+    for(var i=19; i<=27; i++) gAl.appendChild(makeCell('A', i, ''));
+
+    var gB = document.getElementById('gridB');        setCols(gB,10);
+    for(var i=1;  i<=20; i++) gB.appendChild(makeCell('B', i, 'zone-b'));
+
+    var gC = document.getElementById('gridC');        setCols(gC,10);
+    for(var i=21; i<=30; i++) gC.appendChild(makeCell('C', i, 'zone-c'));
+}
+
+function makeCell(zone, num, cls) {
+    var key = zone + num;
+    cellMeta[key] = { num: num, zone: zone };
+    var d = document.createElement('div');
+    d.className = 'cell ' + cls;
+    d.textContent = num;
+    d.id = 'cell-' + key;
+    d.onclick = function(){ editCell(key); showInfo(key); };
+    return d;
+}
+
+/* ============================================================
+   BUILD SVG A — вокруг шатра (по часовой от верхнего-левого)
 ============================================================ */
 function buildSvgA() {
     var svg = document.getElementById('svgA');
-    var ns  = 'http://www.w3.org/2000/svg';
-    var h = 11, gap = 2, x = 4, w = 56;
-    for (var i = 0; i < 40; i++) {
-        var num = i + 1;
-        var y   = i * (h + gap);
-        var g   = document.createElementNS(ns, 'g');
-        g.setAttribute('class', 'svg-cell');
-        g.setAttribute('id', 'svgA-' + num);
-        g.addEventListener('click', (function(n){ return function(){ editCell(n); }; })(num));
-
-        var r = document.createElementNS(ns, 'rect');
-        r.setAttribute('x', x); r.setAttribute('y', y);
-        r.setAttribute('width', w); r.setAttribute('height', h);
-        r.setAttribute('rx', '2'); r.setAttribute('fill', '#bee3f8');
-        r.setAttribute('stroke', '#3182ce'); r.setAttribute('stroke-width', '1.2');
-
-        var t = document.createElementNS(ns, 'text');
-        t.setAttribute('x', x + w/2); t.setAttribute('y', y + h - 2);
-        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '7.5');
-        t.setAttribute('font-weight', 'bold'); t.setAttribute('fill', '#1a365d');
-        t.setAttribute('pointer-events', 'none');
-        t.textContent = num;
-
-        g.appendChild(r); g.appendChild(t); svg.appendChild(g);
-    }
-}
-
-/* ============================================================
-   BUILD SVG B — вертикальная, 20 ячеек
-============================================================ */
-function buildSvgB() {
-    var svg = document.getElementById('svgB');
-    var ns  = 'http://www.w3.org/2000/svg';
-    var h = 11, gap = 2, x = 4, w = 56;
-    for (var i = 0; i < 20; i++) {
-        var num = 41 + i;
-        var y   = i * (h + gap);
-        var g   = document.createElementNS(ns, 'g');
-        g.setAttribute('class', 'svg-cell');
-        g.setAttribute('id', 'svgB-' + num);
-        g.addEventListener('click', (function(n){ return function(){ editCell(n); }; })(num));
-
-        var r = document.createElementNS(ns, 'rect');
-        r.setAttribute('x', x); r.setAttribute('y', y);
-        r.setAttribute('width', w); r.setAttribute('height', h);
-        r.setAttribute('rx', '2'); r.setAttribute('fill', '#c6f6d5');
-        r.setAttribute('stroke', '#38a169'); r.setAttribute('stroke-width', '1.2');
-
-        var t = document.createElementNS(ns, 'text');
-        t.setAttribute('x', x + w/2); t.setAttribute('y', y + h - 2);
-        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '7.5');
-        t.setAttribute('font-weight', 'bold'); t.setAttribute('fill', '#1a4731');
-        t.setAttribute('pointer-events', 'none');
-        t.textContent = num;
-
-        g.appendChild(r); g.appendChild(t); svg.appendChild(g);
-    }
-}
-
-/* ============================================================
-   BUILD SVG C — квадрат со сценой
-============================================================ */
-function buildSvgC() {
-    var svg = document.getElementById('svgC');
     var ns  = 'http://www.w3.org/2000/svg';
 
     var bg = document.createElementNS(ns,'rect');
@@ -328,8 +295,8 @@ function buildSvgC() {
     svg.appendChild(bg);
 
     var sc = document.createElementNS(ns,'rect');
-    sc.setAttribute('x','90'); sc.setAttribute('y','90');
-    sc.setAttribute('width','110'); sc.setAttribute('height','110');
+    sc.setAttribute('x','90'); sc.setAttribute('y','100');
+    sc.setAttribute('width','110'); sc.setAttribute('height','90');
     sc.setAttribute('fill','#ffc107'); sc.setAttribute('stroke','#e65100');
     sc.setAttribute('stroke-width','2'); sc.setAttribute('rx','6');
     svg.appendChild(sc);
@@ -345,21 +312,22 @@ function buildSvgC() {
     addTxt(145,140,'🎭 СЦЕНА',13,true,'#7b3100');
     addTxt(145,156,'центральная',9,false,'#7b3100');
 
-    // Top: 61-66
-    for(var i=0;i<6;i++) addSvgCCell(svg,ns,61+i, 10+i*46, 8,  40, 24);
-    // Bottom: 67-72
-    for(var i=0;i<6;i++) addSvgCCell(svg,ns,67+i, 10+i*46, 258, 40, 24);
-    // Left: 73-78
-    for(var i=0;i<6;i++) addSvgCCell(svg,ns,73+i, 8, 40+i*37, 30, 28);
-    // Right: 79-84
-    for(var i=0;i<6;i++) addSvgCCell(svg,ns,79+i, 252, 40+i*37, 30, 28);
+    // Сверху 1–6 (слева → направо)
+    for(var i=0;i<6;i++) addSvgCell(svg,ns,'A',1+i,  10+i*46, 8,  40, 24);
+    // Справа 7–12 (сверху → вниз)
+    for(var i=0;i<6;i++) addSvgCell(svg,ns,'A',7+i,  252, 40+i*37, 30, 28);
+    // Снизу 13–18 (по часовой: справа → налево)
+    for(var i=0;i<6;i++) addSvgCell(svg,ns,'A',13+i, 10+(5-i)*46, 258, 40, 24);
+    // Слева 19–27 (по часовой: снизу → вверх)
+    for(var i=0;i<9;i++) addSvgCell(svg,ns,'A',19+i, 8, 36+(8-i)*24, 30, 20);
 }
 
-function addSvgCCell(svg, ns, num, x, y, w, h) {
+function addSvgCell(svg, ns, zone, num, x, y, w, h) {
+    var key = zone + num;
     var g = document.createElementNS(ns,'g');
     g.setAttribute('class','svg-cell');
-    g.setAttribute('id','svgC-'+num);
-    g.addEventListener('click',(function(n){ return function(){ editCell(n); }; })(num));
+    g.setAttribute('id','svg-'+key);
+    g.addEventListener('click',(function(k){ return function(){ editCell(k); showInfo(k); }; })(key));
 
     var r = document.createElementNS(ns,'rect');
     r.setAttribute('x',x); r.setAttribute('y',y);
@@ -369,8 +337,8 @@ function addSvgCCell(svg, ns, num, x, y, w, h) {
 
     var t = document.createElementNS(ns,'text');
     t.setAttribute('x',x+w/2); t.setAttribute('y',y+h/2+4);
-    t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','8');
-    t.setAttribute('font-weight','bold'); t.setAttribute('fill','#276749');
+    t.setAttribute('text-anchor','middle'); t.setAttribute('font-size','9');
+    t.setAttribute('font-weight','bold'); t.setAttribute('fill','#1a4731');
     t.setAttribute('pointer-events','none');
     t.textContent = num;
 
@@ -378,44 +346,46 @@ function addSvgCCell(svg, ns, num, x, y, w, h) {
 }
 
 /* ============================================================
-   BUILD CELL GRIDS
+   BUILD SVG — вертикальная линия (B и C)
 ============================================================ */
-function buildGrids() {
-    var gA = document.getElementById('gridA');
-    for(var i=1;  i<=40; i++) gA.appendChild(makeCell(i,''));
+function buildSvgLine(svgId, zone, start, count, fill, stroke, txtColor) {
+    var svg = document.getElementById(svgId);
+    var ns  = 'http://www.w3.org/2000/svg';
+    var h = 11, gap = 2, x = 4, w = 56;
+    for (var i = 0; i < count; i++) {
+        var num = start + i;
+        var key = zone + num;
+        var y   = i * (h + gap);
+        var g   = document.createElementNS(ns, 'g');
+        g.setAttribute('class', 'svg-cell');
+        g.setAttribute('id', 'svg-' + key);
+        g.addEventListener('click', (function(k){ return function(){ editCell(k); showInfo(k); }; })(key));
 
-    var gB = document.getElementById('gridB');
-    for(var i=41; i<=60; i++) gB.appendChild(makeCell(i,'zone-b'));
+        var r = document.createElementNS(ns, 'rect');
+        r.setAttribute('x', x); r.setAttribute('y', y);
+        r.setAttribute('width', w); r.setAttribute('height', h);
+        r.setAttribute('rx', '2'); r.setAttribute('fill', fill);
+        r.setAttribute('stroke', stroke); r.setAttribute('stroke-width', '1.2');
 
-    var gCt = document.getElementById('gridC_top');
-    for(var i=61; i<=66; i++) gCt.appendChild(makeCell(i,'zone-c'));
+        var t = document.createElementNS(ns, 'text');
+        t.setAttribute('x', x + w/2); t.setAttribute('y', y + h - 2);
+        t.setAttribute('text-anchor', 'middle'); t.setAttribute('font-size', '7.5');
+        t.setAttribute('font-weight', 'bold'); t.setAttribute('fill', txtColor);
+        t.setAttribute('pointer-events', 'none');
+        t.textContent = num;
 
-    var gCb = document.getElementById('gridC_bot');
-    for(var i=67; i<=72; i++) gCb.appendChild(makeCell(i,'zone-c'));
-
-    var gCl = document.getElementById('gridC_left');
-    for(var i=73; i<=78; i++) gCl.appendChild(makeCell(i,'zone-c'));
-
-    var gCr = document.getElementById('gridC_right');
-    for(var i=79; i<=84; i++) gCr.appendChild(makeCell(i,'zone-c'));
-}
-
-function makeCell(num, cls) {
-    var d = document.createElement('div');
-    d.className = 'cell ' + cls;
-    d.textContent = num;
-    d.id = 'cell-' + num;
-    d.onclick = function(){ editCell(num); showInfo(num); };
-    return d;
+        g.appendChild(r); g.appendChild(t); svg.appendChild(g);
+    }
 }
 
 /* ============================================================
    EDIT / SAVE / DELETE
 ============================================================ */
-function editCell(num) {
-    currentCell = num;
-    var data = cellsData[num] || {number:num,status:'free',name:'',owner:'',phone:'',category:'',notes:''};
-    document.getElementById('cellNumber').textContent  = num;
+function editCell(key) {
+    currentCell = key;
+    var data = cellsData[key] || {status:'free',name:'',owner:'',phone:'',category:'',notes:''};
+    var m = cellMeta[key];
+    document.getElementById('cellNumber').textContent  = m ? (m.zone + m.num) : key;
     document.getElementById('cellStatus').value        = data.status;
     document.getElementById('cellName').value          = data.name   || '';
     document.getElementById('cellOwner').value         = data.owner  || '';
@@ -426,8 +396,11 @@ function editCell(num) {
 }
 
 function saveCell() {
+    var m = cellMeta[currentCell] || {num:currentCell, zone:''};
     var data = {
-        number:   currentCell,
+        key:      currentCell,
+        number:   m.num,
+        zone:     m.zone,
         status:   document.getElementById('cellStatus').value,
         name:     document.getElementById('cellName').value,
         owner:    document.getElementById('cellOwner').value,
@@ -452,38 +425,39 @@ function closeModal() { document.getElementById('editModal').classList.remove('a
 function resetData() {
     if(confirm('⚠️ Удалить ВСЕ данные у всех пользователей?')) {
         fairRef.set(null);
-        document.getElementById('infoContent').innerHTML = '<p class="info-placeholder">Выберите ячейку</p>';
+        document.getElementById('infoContent').innerHTML = '<p class="info-placeholder">Нажмите на ячейку</p>';
     }
 }
 
 /* ============================================================
    UPDATE VISUAL
 ============================================================ */
-var colA = { free:{f:'#bee3f8',s:'#3182ce'}, occupied:{f:'#c6f6d5',s:'#38a169'}, reserved:{f:'#fefcbf',s:'#d69e2e'} };
-var colB = { free:{f:'#c6f6d5',s:'#38a169'}, occupied:{f:'#9ae6b4',s:'#276749'}, reserved:{f:'#fefcbf',s:'#d69e2e'} };
-var colC = { free:{f:'#d5e8d4',s:'#82b366'}, occupied:{f:'#9ae6b4',s:'#276749'}, reserved:{f:'#fefcbf',s:'#d69e2e'} };
+var palettes = {
+    A: { free:{f:'#d5e8d4',s:'#82b366'}, occupied:{f:'#9ae6b4',s:'#276749'}, reserved:{f:'#fefcbf',s:'#d69e2e'} },
+    B: { free:{f:'#c6f6d5',s:'#38a169'}, occupied:{f:'#9ae6b4',s:'#276749'}, reserved:{f:'#fefcbf',s:'#d69e2e'} },
+    C: { free:{f:'#bee3f8',s:'#3182ce'}, occupied:{f:'#90cdf4',s:'#2c5282'}, reserved:{f:'#fefcbf',s:'#d69e2e'} }
+};
 
 function updateAllCells() {
-    for(var n=1; n<=84; n++) {
-        var el = document.getElementById('cell-'+n);
-        if(!el) continue;
-        var data = cellsData[n];
-        el.classList.remove('occupied','reserved');
-        if(data) {
-            if(data.status==='occupied') el.classList.add('occupied');
-            if(data.status==='reserved') el.classList.add('reserved');
+    for(var key in cellMeta) {
+        var el = document.getElementById('cell-'+key);
+        if(el) {
+            var data = cellsData[key];
+            el.classList.remove('occupied','reserved');
+            if(data) {
+                if(data.status==='occupied') el.classList.add('occupied');
+                if(data.status==='reserved') el.classList.add('reserved');
+            }
         }
+        updateSvgCell('svg-'+key, key, palettes[cellMeta[key].zone]);
     }
-    for(var n=1;  n<=40; n++) updateSvgCell('svgA-'+n, n, colA);
-    for(var n=41; n<=60; n++) updateSvgCell('svgB-'+n, n, colB);
-    for(var n=61; n<=84; n++) updateSvgCell('svgC-'+n, n, colC);
 }
 
-function updateSvgCell(id, n, palette) {
+function updateSvgCell(id, key, palette) {
     var g = document.getElementById(id);
-    if(!g) return;
+    if(!g || !palette) return;
     var r      = g.querySelector('rect');
-    var data   = cellsData[n];
+    var data   = cellsData[key];
     var status = data ? data.status : 'free';
     var c      = palette[status] || palette.free;
     r.setAttribute('fill',   c.f);
@@ -493,15 +467,16 @@ function updateSvgCell(id, n, palette) {
 /* ============================================================
    INFO PANEL
 ============================================================ */
-function showInfo(num) {
-    var data  = cellsData[num];
+function showInfo(key) {
+    var data  = cellsData[key];
+    var m     = cellMeta[key] || {num:key, zone:''};
     var panel = document.getElementById('infoContent');
-    var zone  = num<=40 ? 'A — Главная аллея' : num<=60 ? 'B — Боковая аллея' : 'C — Вокруг шатра';
+    var zone  = ZONES[m.zone] || m.zone;
     var badges = {free:'badge-free',occupied:'badge-occupied',reserved:'badge-reserved'};
     var labels = {free:'Свободна',occupied:'Занята',reserved:'Зарезервирована'};
     var status = data ? data.status : 'free';
     function row(label,val) { return '<div class="info-item"><div class="info-item-label">'+label+'</div><div class="info-item-value">'+val+'</div></div>'; }
-    var html = row('Ячейка','#'+num) + row('Зона',zone) + row('Статус','<span class="status-badge '+badges[status]+'">'+labels[status]+'</span>');
+    var html = row('Ячейка', m.zone + m.num) + row('Зона',zone) + row('Статус','<span class="status-badge '+badges[status]+'">'+labels[status]+'</span>');
     if(data&&data.name)     html += row('Название',     esc(data.name));
     if(data&&data.owner)    html += row('Владелец',     esc(data.owner));
     if(data&&data.phone)    html += row('Телефон','<a href="tel:'+esc(data.phone)+'" style="color:#3182ce;">'+esc(data.phone)+'</a>');
@@ -516,8 +491,8 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModa
 
 /* ── INIT ── */
 buildSvgA();
-buildSvgB();
-buildSvgC();
+buildSvgLine('svgB', 'B', 1,  20, '#c6f6d5', '#38a169', '#1a4731');
+buildSvgLine('svgC', 'C', 21, 10, '#bee3f8', '#3182ce', '#1a365d');
 buildGrids();
 </script>
 </body>
