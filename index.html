@@ -26,7 +26,7 @@
 
         .main-layout { display: flex; }
         .zones-column { flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 24px; }
-        .info-sidebar { width: 260px; min-width: 260px; background: #f8fafc; border-left: 2px solid #e2e8f0; padding: 18px; max-height: calc(100vh - 200px); overflow-y: auto; position: sticky; top: 0; }
+        .info-sidebar { width: 290px; min-width: 290px; background: #f8fafc; border-left: 2px solid #e2e8f0; padding: 18px; max-height: calc(100vh - 200px); overflow-y: auto; position: sticky; top: 0; }
 
         .zone-block { border: 2px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
         .zone-title { padding: 11px 16px; font-size: 14px; font-weight: 700; color: white; }
@@ -52,6 +52,8 @@
         .cell.zone-c { border-color:#d69e2e; } .cell.zone-c:hover { background:#fffff0; }
         .cell.occupied { background:#c6f6d5; border-color:#38a169; color:#276749; }
         .cell.reserved { background:#fefcbf; border-color:#d69e2e; color:#744210; }
+        .cell.company-preppy { background:#ddd6fe; border-color:#7c3aed; color:#5b21b6; }
+        .cell.company-shoro  { background:#ffedd5; border-color:#ea580c; color:#9a3412; }
 
         .row-label { font-size:11px; color:#718096; font-weight:600; margin-bottom:4px; margin-top:8px; }
         .a-grids { display:flex; flex-direction:column; gap:2px; }
@@ -66,6 +68,20 @@
         .badge-free     { background:#c6f6d5; color:#276749; }
         .badge-occupied { background:#fed7d7; color:#9b2c2c; }
         .badge-reserved { background:#fefcbf; color:#744210; }
+
+        /* ── Сводка «Кто где» ── */
+        .company-legend { display:flex; gap:12px; flex-wrap:wrap; font-size:11px; margin:0 0 14px; }
+        .company-legend span { display:inline-flex; align-items:center; gap:5px; color:#4a5568; }
+        .company-legend i { width:12px; height:12px; border-radius:3px; display:inline-block; }
+        .overview-zone { margin-bottom:14px; }
+        .overview-zone-title { font-size:12px; font-weight:700; color:#2d3748; margin-bottom:6px; }
+        .overview-badges { display:flex; flex-wrap:wrap; gap:4px; }
+        .ov-badge { width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border-radius:5px; border:1.5px solid #cbd5e0; background:#fff; color:#4a5568; cursor:pointer; transition:transform .12s; }
+        .ov-badge.preppy { background:#7c3aed; border-color:#6d28d9; color:#fff; }
+        .ov-badge.shoro  { background:#ea580c; border-color:#c2410c; color:#fff; }
+        .ov-badge.reserved { background:#fefcbf; border-color:#d69e2e; color:#744210; }
+        .ov-badge:hover { transform:scale(1.15); }
+        .ov-counts { font-size:12px; color:#4a5568; margin-top:2px; }
 
         .legend { display:flex; gap:14px; flex-wrap:wrap; padding:10px 18px; background:#f7fafc; border-top:1px solid #e2e8f0; font-size:11px; color:#4a5568; align-items:center; }
         .legend-item { display:flex; align-items:center; gap:5px; }
@@ -168,7 +184,16 @@
         </div>
 
         <div class="info-sidebar">
-            <div class="info-title">📋 Информация</div>
+            <div class="info-title">🗺️ Кто где</div>
+            <div class="company-legend">
+                <span><i style="background:#7c3aed"></i> Преппи</span>
+                <span><i style="background:#ea580c"></i> Шоро</span>
+                <span><i style="background:#fefcbf;border:1.5px solid #d69e2e"></i> Бронь</span>
+                <span><i style="background:#fff;border:1.5px solid #cbd5e0"></i> Свободно</span>
+            </div>
+            <div id="overviewContent"></div>
+
+            <div class="info-title" style="margin-top:8px;">📋 Информация</div>
             <div id="infoContent"><p class="info-placeholder">Нажмите на ячейку</p></div>
         </div>
     </div>
@@ -191,6 +216,14 @@
                 <option value="free">✅ Свободна</option>
                 <option value="occupied">🔴 Занята</option>
                 <option value="reserved">🟡 Зарезервирована</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Компания</label>
+            <select id="cellCompany">
+                <option value="">— не выбрано —</option>
+                <option value="preppy">🟣 Преппи</option>
+                <option value="shoro">🟠 Шоро</option>
             </select>
         </div>
         <div class="form-group"><label>Название торговой точки</label><input type="text" id="cellName" placeholder="Например: Пирожки Марии"></div>
@@ -387,6 +420,7 @@ function editCell(key) {
     var m = cellMeta[key];
     document.getElementById('cellNumber').textContent  = m ? (m.zone + m.num) : key;
     document.getElementById('cellStatus').value        = data.status;
+    document.getElementById('cellCompany').value       = data.company || '';
     document.getElementById('cellName').value          = data.name   || '';
     document.getElementById('cellOwner').value         = data.owner  || '';
     document.getElementById('cellPhone').value         = data.phone  || '';
@@ -402,6 +436,7 @@ function saveCell() {
         number:   m.num,
         zone:     m.zone,
         status:   document.getElementById('cellStatus').value,
+        company:  document.getElementById('cellCompany').value,
         name:     document.getElementById('cellName').value,
         owner:    document.getElementById('cellOwner').value,
         phone:    document.getElementById('cellPhone').value,
@@ -443,25 +478,44 @@ function updateAllCells() {
         var el = document.getElementById('cell-'+key);
         if(el) {
             var data = cellsData[key];
-            el.classList.remove('occupied','reserved');
+            el.classList.remove('occupied','reserved','company-preppy','company-shoro');
             if(data) {
-                if(data.status==='occupied') el.classList.add('occupied');
-                if(data.status==='reserved') el.classList.add('reserved');
+                if(data.company==='preppy')      el.classList.add('company-preppy');
+                else if(data.company==='shoro')  el.classList.add('company-shoro');
+                else if(data.status==='occupied')el.classList.add('occupied');
+                if(!data.company && data.status==='reserved') el.classList.add('reserved');
             }
         }
         updateSvgCell('svg-'+key, key, palettes[cellMeta[key].zone]);
     }
+    renderOverview();
 }
+
+var companyColors = {
+    preppy: { f:'#7c3aed', s:'#6d28d9' },
+    shoro:  { f:'#ea580c', s:'#c2410c' }
+};
+var baseTxtColor = { A:'#1a4731', B:'#1a4731', C:'#1a365d' };
 
 function updateSvgCell(id, key, palette) {
     var g = document.getElementById(id);
     if(!g || !palette) return;
     var r      = g.querySelector('rect');
+    var t      = g.querySelector('text');
     var data   = cellsData[key];
-    var status = data ? data.status : 'free';
-    var c      = palette[status] || palette.free;
+    var zone   = cellMeta[key] ? cellMeta[key].zone : 'A';
+    var c, tc;
+    if(data && data.company && companyColors[data.company]) {
+        c  = companyColors[data.company];
+        tc = '#ffffff';
+    } else {
+        var status = data ? data.status : 'free';
+        c  = palette[status] || palette.free;
+        tc = baseTxtColor[zone] || '#1a202c';
+    }
     r.setAttribute('fill',   c.f);
     r.setAttribute('stroke', c.s);
+    if(t) t.setAttribute('fill', tc);
 }
 
 /* ============================================================
@@ -485,6 +539,37 @@ function showInfo(key) {
     panel.innerHTML = html;
 }
 
+/* ── Сводка «Кто где» — плашки по зонам, по мере заполнения ── */
+function renderOverview() {
+    var panel = document.getElementById('overviewContent');
+    if(!panel) return;
+    var zones = [
+        { z:'A', title:'Зона A — вокруг шатра (1–27)', start:1,  end:27 },
+        { z:'B', title:'Зона B — боковая линия (1–20)', start:1,  end:20 },
+        { z:'C', title:'Зона C — прямая линия (21–30)', start:21, end:30 }
+    ];
+    var cP = 0, cS = 0;
+    var html = '';
+    zones.forEach(function(zn) {
+        html += '<div class="overview-zone"><div class="overview-zone-title">' + zn.title + '</div><div class="overview-badges">';
+        for(var n = zn.start; n <= zn.end; n++) {
+            var key  = zn.z + n;
+            var data = cellsData[key];
+            var cls = '', label = 'Свободно';
+            if(data && data.company === 'preppy')      { cls = 'preppy';   label = 'Преппи'; cP++; }
+            else if(data && data.company === 'shoro')  { cls = 'shoro';    label = 'Шоро';   cS++; }
+            else if(data && data.status === 'reserved'){ cls = 'reserved'; label = 'Бронь'; }
+            else if(data && data.status === 'occupied'){ label = 'Занято'; }
+            if(data && data.name) label += ' · ' + data.name;
+            html += '<div class="ov-badge ' + cls + '" title="' + esc(label) +
+                    '" onclick="editCell(\'' + key + '\');showInfo(\'' + key + '\')">' + n + '</div>';
+        }
+        html += '</div></div>';
+    });
+    html += '<div class="ov-counts">🟣 Преппи: <b>' + cP + '</b> &nbsp;·&nbsp; 🟠 Шоро: <b>' + cS + '</b></div>';
+    panel.innerHTML = html;
+}
+
 function esc(t) { var d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
 
 document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
@@ -494,6 +579,7 @@ buildSvgA();
 buildSvgLine('svgB', 'B', 1,  20, '#c6f6d5', '#38a169', '#1a4731');
 buildSvgLine('svgC', 'C', 21, 10, '#bee3f8', '#3182ce', '#1a365d');
 buildGrids();
+renderOverview();
 </script>
 </body>
 </html>
