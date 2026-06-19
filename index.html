@@ -164,15 +164,15 @@
 
             <!-- ZONE C — прямая линия -->
             <div class="zone-block zone-c">
-                <div class="zone-title">📍 ЗОНА C — Прямая линия · ячейки 21–30</div>
+                <div class="zone-title">📍 ЗОНА C — Прямая линия · ячейки 21–32</div>
                 <div class="zone-body">
                     <div class="illus-panel">
                         <div class="illus-label">Прямая</div>
-                        <svg id="svgC" width="64" height="140" viewBox="0 0 64 140"></svg>
+                        <svg id="svgC" width="64" height="170" viewBox="0 0 64 170"></svg>
                         <div class="illus-label">линия</div>
                     </div>
                     <div class="grid-panel">
-                        <div class="grid-label">Ячейки 21–30 · нажмите для редактирования</div>
+                        <div class="grid-label">Ячейки 21–32 · нажмите для редактирования</div>
                         <div class="cells-grid" id="gridC"></div>
                     </div>
                 </div>
@@ -282,7 +282,7 @@ function buildGrids() {
     for(var i=1;  i<=20; i++) gB.appendChild(makeCell('B', i, 'zone-b'));
 
     var gC = document.getElementById('gridC');        setCols(gC,10);
-    for(var i=21; i<=30; i++) gC.appendChild(makeCell('C', i, 'zone-c'));
+    for(var i=21; i<=32; i++) gC.appendChild(makeCell('C', i, 'zone-c'));
 }
 
 function makeCell(zone, num, cls) {
@@ -516,7 +516,7 @@ function renderOverview() {
     var zones = [
         { z:'A', title:'Зона A — вокруг шатра', start:1,  end:27 },
         { z:'B', title:'Зона B — боковая линия', start:1,  end:20 },
-        { z:'C', title:'Зона C — прямая линия',  start:21, end:30 }
+        { z:'C', title:'Зона C — прямая линия',  start:21, end:32 }
     ];
     var statusLabels = { occupied:'Занято', reserved:'Бронь' };
     var html = '';
@@ -554,7 +554,7 @@ document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModa
 /* ── INIT ── */
 buildSvgA();
 buildSvgLine('svgB', 'B', 1,  20, '#c6f6d5', '#38a169', '#1a4731');
-buildSvgLine('svgC', 'C', 21, 10, '#bee3f8', '#3182ce', '#1a365d');
+buildSvgLine('svgC', 'C', 21, 12, '#bee3f8', '#3182ce', '#1a365d');
 buildGrids();
 renderOverview();
 </script>
